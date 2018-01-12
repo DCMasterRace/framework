@@ -17,11 +17,12 @@ use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\AwsS3v3\AwsS3Adapter as S3Adapter;
 use League\Flysystem\Cached\Storage\Memory as MemoryStore;
 use Illuminate\Contracts\Filesystem\Factory as FactoryContract;
+use Illuminate\Support\Manager;
 
 /**
  * @mixin \Illuminate\Contracts\Filesystem\Filesystem
  */
-class FilesystemManager implements FactoryContract
+class FilesystemManager extends Manager implements FactoryContract
 {
     /**
      * The application instance.
@@ -115,7 +116,7 @@ class FilesystemManager implements FactoryContract
         $config = $this->getConfig($name);
 
         if (isset($this->customCreators[$config['driver']])) {
-            return $this->callCustomCreator($config);
+            return $this->callCustomCreator($config['driver']);
         }
 
         $driverMethod = 'create'.ucfirst($config['driver']).'Driver';
@@ -130,12 +131,12 @@ class FilesystemManager implements FactoryContract
     /**
      * Call a custom driver creator.
      *
-     * @param  array  $config
+     * @param  string  $driver
      * @return \Illuminate\Contracts\Filesystem\Filesystem
      */
-    protected function callCustomCreator(array $config)
+    protected function callCustomCreator($driver)
     {
-        $driver = $this->customCreators[$config['driver']]($this->app, $config);
+        $driver = $this->customCreators[$driver]($this->app);
 
         if ($driver instanceof FilesystemInterface) {
             return $this->adapt($driver);
@@ -150,7 +151,7 @@ class FilesystemManager implements FactoryContract
      * @param  array  $config
      * @return \Illuminate\Contracts\Filesystem\Filesystem
      */
-    public function createLocalDriver(array $config)
+    public function createLocalDriver(array $config = ['root' => './'])
     {
         $permissions = $config['permissions'] ?? [];
 

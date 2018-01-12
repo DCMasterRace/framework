@@ -7,6 +7,8 @@ use League\Flysystem\Adapter\Ftp;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
 use Illuminate\Filesystem\FilesystemManager;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Config\Repository;
 
 class FilesystemTest extends TestCase
 {
@@ -461,5 +463,20 @@ class FilesystemTest extends TestCase
         $this->assertEquals(0700, $adapter->getPermPublic());
         $this->assertEquals('ftp.example.com', $adapter->getHost());
         $this->assertEquals('admin', $adapter->getUsername());
+    }
+
+    public function testGetDefaultDriver()
+    {
+        $app = new Application();
+        $app['config'] = new Repository([
+            'filesystems' => [
+                'default' => 'local'
+            ]
+        ]);
+
+        $filesystem = new FilesystemManager($app);
+        $driver = $filesystem->driver();
+
+        $this->assertInstanceOf(FilesystemAdapter::class, $driver);
     }
 }
