@@ -15,7 +15,7 @@
 >
     <testsuites>
         <testsuite name="Laravel Test Suite">
-            <directory suffix="Test.php">./tests</directory>
+            <directory suffix="Test.php">./tests/Queue</directory>
         </testsuite>
     </testsuites>
     <filter>
